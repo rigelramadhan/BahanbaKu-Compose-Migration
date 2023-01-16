@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">BahanbaKu Compose Project</string>
+
+<!--    CONTENT DESCRIPTIONS -->
+    <string name="description_recipe_image">Recipe image</string>
+    <string name="description_recipe_rating">Recipe rating</string>
+
+<!--    FORMATS -->
+    <string name="format_name">%s %s</string>
 </resources>
