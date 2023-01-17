@@ -7,4 +7,8 @@
 
 <!--    FORMATS -->
     <string name="format_name">%s %s</string>
+
+<!--    OTHERS -->
+    <string name="all">All</string>
+    <string name="more_recipes">More Recipes</string>
 </resources>
