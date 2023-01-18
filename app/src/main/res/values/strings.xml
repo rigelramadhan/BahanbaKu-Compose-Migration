@@ -4,11 +4,15 @@
 <!--    CONTENT DESCRIPTIONS -->
     <string name="description_recipe_image">Recipe image</string>
     <string name="description_recipe_rating">Recipe rating</string>
+    <string name="description_category_image">Category image</string>
 
 <!--    FORMATS -->
     <string name="format_name">%s %s</string>
+    <string name="format_greetings">Good %s, %s!</string>
 
 <!--    OTHERS -->
     <string name="all">All</string>
     <string name="more_recipes">More Recipes</string>
+    <string name="description_search_recipes">Search recipes</string>
+    <string name="search_for_recipes">Search for recipes</string>
 </resources>
