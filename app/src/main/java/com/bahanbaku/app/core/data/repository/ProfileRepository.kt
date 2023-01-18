@@ -37,7 +37,7 @@ class ProfileRepository(
         }
     }
 
-    override fun getToken() = userPreferences.getToken().asLiveData(coroutineContext)
+    override fun getToken() = userPreferences.getToken()
 
     override fun deleteToken() {
         launch(Dispatchers.IO) {

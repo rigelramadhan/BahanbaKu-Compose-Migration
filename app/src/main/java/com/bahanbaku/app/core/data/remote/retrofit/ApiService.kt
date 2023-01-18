@@ -16,7 +16,7 @@ interface ApiService {
         @Field("email") email: String,
         @Field("password") password: String,
         @Field("phoneNumber") phoneNumber: String,
-    ): Flowable<PostRegisterResponse>
+    ): z<PostRegisterResponse>
 
     @FormUrlEncoded
     @POST("login")

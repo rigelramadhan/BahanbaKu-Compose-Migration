@@ -12,11 +12,16 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.bahanbaku.app.R
 import com.bahanbaku.app.core.domain.model.Categories
 import com.bahanbaku.app.core.domain.model.Recipe
@@ -24,6 +29,7 @@ import com.bahanbaku.app.core.domain.model.RecipeRecommendations
 import com.bahanbaku.app.core.utils.categories
 import com.bahanbaku.app.core.utils.recipeList
 import com.bahanbaku.app.core.utils.recipeRecommendations
+import com.bahanbaku.app.ui.common.AuthState
 import com.bahanbaku.app.ui.components.CategoryItem
 import com.bahanbaku.app.ui.components.RecipeCardGridItem
 import com.bahanbaku.app.ui.components.RecipeCardMediumItem
@@ -33,8 +39,32 @@ import com.bahanbaku.app.ui.theme.PureWhite
 import com.bahanbaku.app.ui.theme.WhiteDefault
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    viewModel: HomeViewModel = hiltViewModel(),
+    navigateToDetail: (String) -> Unit,
+) {
+    val authState: AuthState by viewModel.authState.collectAsState(initial = AuthState.Loading())
 
+    when(authState) {
+        is AuthState.Authorized -> {
+            val token = authState.token
+            if (token != null) {
+                viewModel.getRecipes(token).observe(LocalLifecycleOwner.current) {
+
+                }
+            }
+        }
+        is AuthState.Unauthorized -> {
+
+        }
+        is AuthState.Loading -> {
+
+        }
+        is AuthState.Error -> {
+
+        }
+    }
 }
 
 @Composable
