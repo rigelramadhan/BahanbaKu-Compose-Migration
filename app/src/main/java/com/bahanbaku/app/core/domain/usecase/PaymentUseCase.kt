@@ -3,7 +3,7 @@ package com.bahanbaku.app.core.domain.usecase
 import com.bahanbaku.app.core.data.Resource
 import com.bahanbaku.app.core.data.remote.response.*
 import com.bahanbaku.app.core.domain.model.ProductsData
-import io.reactivex.Flowable
+import kotlinx.coroutines.flow.Flow
 import java.io.File
 
 interface PaymentUseCase {
@@ -11,17 +11,17 @@ interface PaymentUseCase {
         token: String,
         products: ProductsData,
         id: String
-    ): Flowable<Resource<PostCreateDirectPaymentResponse>>
-    fun getDirectPaymentInfo(token: String): Flowable<Resource<GetDirectPaymentInfoResponse>>
+    ): Flow<Resource<PostCreateDirectPaymentResponse>>
+    fun getDirectPaymentInfo(token: String): Flow<Resource<GetDirectPaymentInfoResponse>>
     fun submitPaymentProof(
         token: String,
         file: File,
         id: String
-    ): Flowable<Resource<PostSubmitProofResponse>>
+    ): Flow<Resource<PostSubmitProofResponse>>
 
-    fun getDirectOrderHistory(token: String): Flowable<Resource<List<OrderHistoryItem>>>
+    fun getDirectOrderHistory(token: String): Flow<Resource<List<OrderHistoryItem>>>
     fun getDirectOrderDetail(
         token: String,
         id: String
-    ): Flowable<Resource<DirectPaymentDetailResult>>
+    ): Flow<Resource<DirectPaymentDetailResult>>
 }

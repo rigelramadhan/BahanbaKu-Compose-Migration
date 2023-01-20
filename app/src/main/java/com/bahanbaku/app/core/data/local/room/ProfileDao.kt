@@ -6,16 +6,16 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.bahanbaku.app.core.data.local.entity.ProfileEntity
 import io.reactivex.Completable
-import io.reactivex.Flowable
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ProfileDao {
     @Query("SELECT * FROM profile LIMIT 1")
-    fun getProfile(): Flowable<List<ProfileEntity>>
+    fun getProfile(): Flow<List<ProfileEntity>>
 
     @Query("DELETE FROM profile")
     fun deleteAllProfile()
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertProfile(profile: ProfileEntity): Completable
+    suspend fun insertProfile(profile: ProfileEntity): Completable
 }

@@ -7,7 +7,7 @@ import com.bahanbaku.app.core.data.remote.response.OrderHistoryItem
 import com.bahanbaku.app.core.data.remote.response.PostSubmitProofResponse
 import com.bahanbaku.app.core.domain.model.ProductsData
 import com.bahanbaku.app.core.domain.repository.IPaymentRepository
-import io.reactivex.Flowable
+import kotlinx.coroutines.flow.Flow
 import java.io.File
 
 class PaymentInteractor(private val paymentRepository: IPaymentRepository) : PaymentUseCase {
@@ -18,18 +18,18 @@ class PaymentInteractor(private val paymentRepository: IPaymentRepository) : Pay
         token: String,
         file: File,
         id: String
-    ): Flowable<Resource<PostSubmitProofResponse>> =
+    ): Flow<Resource<PostSubmitProofResponse>> =
         paymentRepository.submitPaymentProof(token, file, id)
 
-    override fun getDirectPaymentInfo(token: String): Flowable<Resource<GetDirectPaymentInfoResponse>> =
+    override fun getDirectPaymentInfo(token: String): Flow<Resource<GetDirectPaymentInfoResponse>> =
         paymentRepository.getDirectPaymentInfo(token)
 
     override fun getDirectOrderHistory(
         token: String
-    ): Flowable<Resource<List<OrderHistoryItem>>> = paymentRepository.getDirectOrderHistory(token)
+    ): Flow<Resource<List<OrderHistoryItem>>> = paymentRepository.getDirectOrderHistory(token)
 
     override fun getDirectOrderDetail(
         token: String,
         id: String
-    ): Flowable<Resource<DirectPaymentDetailResult>> = paymentRepository.getDirectOrderDetail(token, id)
+    ): Flow<Resource<DirectPaymentDetailResult>> = paymentRepository.getDirectOrderDetail(token, id)
 }

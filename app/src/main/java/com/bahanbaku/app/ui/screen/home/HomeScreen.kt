@@ -1,5 +1,6 @@
 package com.bahanbaku.app.ui.screen.home
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,12 +18,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bahanbaku.app.R
+import com.bahanbaku.app.core.data.Resource
 import com.bahanbaku.app.core.domain.model.Categories
 import com.bahanbaku.app.core.domain.model.Recipe
 import com.bahanbaku.app.core.domain.model.RecipeRecommendations
@@ -31,6 +32,7 @@ import com.bahanbaku.app.core.utils.recipeList
 import com.bahanbaku.app.core.utils.recipeRecommendations
 import com.bahanbaku.app.ui.common.AuthState
 import com.bahanbaku.app.ui.components.CategoryItem
+import com.bahanbaku.app.ui.components.LoadingIndicator
 import com.bahanbaku.app.ui.components.RecipeCardGridItem
 import com.bahanbaku.app.ui.components.RecipeCardMediumItem
 import com.bahanbaku.app.ui.theme.BahanbaKuTheme
@@ -43,25 +45,53 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
     navigateToDetail: (String) -> Unit,
+    navigateToCategory: (String) -> Unit
 ) {
     val authState: AuthState by viewModel.authState.collectAsState(initial = AuthState.Loading())
+    val allRecipes: Resource<List<Recipe>> by viewModel.allRecipes.collectAsState(initial = Resource.Loading())
 
-    when(authState) {
+    when (authState) {
         is AuthState.Authorized -> {
-            val token = authState.token
-            if (token != null) {
-                viewModel.getRecipes(token).observe(LocalLifecycleOwner.current) {
 
-                }
-            }
         }
+
         is AuthState.Unauthorized -> {
 
         }
+
         is AuthState.Loading -> {
+            LoadingIndicator()
+        }
+
+        is AuthState.Error -> {
 
         }
-        is AuthState.Error -> {
+    }
+
+    when (allRecipes) {
+        is Resource.Loading -> {
+            LoadingIndicator()
+        }
+
+        is Resource.Success -> {
+            val data = allRecipes.data
+            if (data.isNullOrEmpty()) {
+                Toast.makeText(LocalContext.current, "No recipes found", Toast.LENGTH_SHORT).show()
+            } else {
+                HomeContent(
+                    profileName = "",
+                    time = "Morning",
+                    topRecommended = RecipeRecommendations("Our Recommendations", data),
+                    categories = categories,
+                    recommendations = listOf(),
+                    allRecipes = data,
+                    navigateToDetail = navigateToDetail,
+                    navigateToCategory = navigateToCategory,
+                )
+            }
+        }
+
+        is Resource.Error -> {
 
         }
     }
@@ -74,7 +104,7 @@ fun HomeContent(
     time: String,
     topRecommended: RecipeRecommendations,
     categories: List<Categories>,
-    recommendations: List<RecipeRecommendations>,
+    recommendations: List<RecipeRecommendations> = listOf(),
     allRecipes: List<Recipe>,
     navigateToDetail: (String) -> Unit,
     navigateToCategory: (String) -> Unit
@@ -82,11 +112,9 @@ fun HomeContent(
     val scrollState = rememberScrollState()
 
     Column(
-        modifier = modifier
-            .verticalScroll(
-                state = scrollState,
-                enabled = true
-            ),
+        modifier = modifier.verticalScroll(
+            state = scrollState, enabled = true
+        ),
     ) {
         Row(
             modifier = Modifier
@@ -96,8 +124,7 @@ fun HomeContent(
         ) {
             Card(
                 shape = RoundedCornerShape(32.dp),
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 backgroundColor = WhiteDefault
             ) {
                 Row(
@@ -124,11 +151,9 @@ fun HomeContent(
                 .fillMaxWidth()
                 .padding(16.dp)
         )
-        RecipeRecommendation(
-            recipeRecommendations = topRecommended,
+        RecipeRecommendation(recipeRecommendations = topRecommended,
             navigateToDetail = navigateToDetail,
-            navigateToAll = {}
-        )
+            navigateToAll = {})
         RecipeCategories(categories = categories, navigateToDetail = navigateToCategory)
         recommendations.forEach { recipeRecommendations ->
             RecipeRecommendation(
@@ -163,31 +188,25 @@ fun RecipeGrid(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = verticalArrangement
+                modifier = Modifier.weight(1f), verticalArrangement = verticalArrangement
             ) {
                 recipes.filterIndexed { index, _ -> index % 2 == 0 }.forEach { data ->
-                    RecipeCardGridItem(
-                        title = data.title,
+                    RecipeCardGridItem(title = data.title,
                         description = data.description,
                         imageUrl = data.imageUrl,
                         rating = data.rating.toFloat(),
-                        modifier = Modifier.clickable { navigateToDetail(data.recipeId) }
-                    )
+                        modifier = Modifier.clickable { navigateToDetail(data.recipeId) })
                 }
             }
             Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = verticalArrangement
+                modifier = Modifier.weight(1f), verticalArrangement = verticalArrangement
             ) {
                 recipes.filterIndexed { index, _ -> index % 2 != 0 }.forEach { data ->
-                    RecipeCardGridItem(
-                        title = data.title,
+                    RecipeCardGridItem(title = data.title,
                         description = data.description,
                         imageUrl = data.imageUrl,
                         rating = data.rating.toFloat(),
-                        modifier = Modifier.clickable { navigateToDetail(data.recipeId) }
-                    )
+                        modifier = Modifier.clickable { navigateToDetail(data.recipeId) })
                 }
             }
         }
@@ -209,8 +228,7 @@ fun RecipeRecommendation(
             Text(
                 text = recipeRecommendations.title,
                 style = MaterialTheme.typography.h6,
-                modifier = Modifier
-                    .weight(1f)
+                modifier = Modifier.weight(1f)
             )
             TextButton(
                 onClick = { navigateToAll(recipeRecommendations) },
@@ -223,13 +241,11 @@ fun RecipeRecommendation(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(recipeRecommendations.recipes) { data ->
-                RecipeCardMediumItem(
-                    title = data.title,
+                RecipeCardMediumItem(title = data.title,
                     description = data.description,
                     imageUrl = data.imageUrl,
                     rating = data.rating.toFloat(),
-                    modifier = Modifier.clickable { navigateToDetail(data.recipeId) }
-                )
+                    modifier = Modifier.clickable { navigateToDetail(data.recipeId) })
             }
         }
     }
@@ -249,8 +265,7 @@ fun RecipeCategories(
             Text(
                 text = recipeRecommendations.title,
                 style = MaterialTheme.typography.h6,
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             )
         }
         LazyRow(
@@ -259,9 +274,7 @@ fun RecipeCategories(
         ) {
             items(categories) { data ->
                 CategoryItem(
-                    title = data.title,
-                    imageUrl = data.imageUrl,
-                    modifier = Modifier.width(120.dp)
+                    title = data.title, imageUrl = data.imageUrl, modifier = Modifier.width(120.dp)
                 )
             }
         }
@@ -272,8 +285,7 @@ fun RecipeCategories(
 @Composable
 fun HomeContentPreview() {
     BahanbaKuTheme {
-        HomeContent(
-            profileName = "Rigel",
+        HomeContent(profileName = "Rigel",
             time = "Morning",
             topRecommended = recipeRecommendations,
             categories = categories,
@@ -282,8 +294,7 @@ fun HomeContentPreview() {
             ),
             allRecipes = recipeList,
             navigateToDetail = {},
-            navigateToCategory = {}
-        )
+            navigateToCategory = {})
     }
 }
 
@@ -302,11 +313,9 @@ fun RecipeGridPreview() {
 @Composable
 fun RecipeRecommendationPreview() {
     BahanbaKuTheme {
-        RecipeRecommendation(
-            recipeRecommendations = recipeRecommendations,
+        RecipeRecommendation(recipeRecommendations = recipeRecommendations,
             navigateToDetail = {},
-            navigateToAll = {}
-        )
+            navigateToAll = {})
     }
 }
 

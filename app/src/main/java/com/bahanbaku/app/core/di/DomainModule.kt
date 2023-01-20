@@ -46,7 +46,7 @@ object DomainModule {
         userPreferences: UserPreferences,
         appExecutors: AppExecutors
     ): IProfileRepository {
-        return ProfileRepository(localDataSource, remoteDataSource, userPreferences, appExecutors)
+        return ProfileRepository(remoteDataSource, userPreferences)
     }
 
     @Provides

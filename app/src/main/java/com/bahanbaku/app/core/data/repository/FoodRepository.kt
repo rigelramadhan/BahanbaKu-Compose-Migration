@@ -3,9 +3,7 @@ package com.bahanbaku.app.core.data.repository
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
 import com.bahanbaku.app.core.data.Resource
-import com.bahanbaku.app.core.data.remote.response.NearbyRestoResponse
 import com.bahanbaku.app.core.data.remote.response.SnapFoodResponse
-import com.bahanbaku.app.core.data.remote.retrofit.ApiService
 import com.bahanbaku.app.core.data.remote.retrofit.ApiServiceML
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -14,9 +12,7 @@ import java.io.File
 import javax.inject.Inject
 
 class FoodRepository @Inject constructor(
-    private val apiServiceML: ApiServiceML,
-    private val apiService: ApiService
-//    private val database: FoodDatabase
+    private val apiServiceML: ApiServiceML
 ) {
     fun postSnapFood(token: String, file: File): LiveData<Resource<SnapFoodResponse>> = liveData {
         emit(Resource.Loading())
@@ -36,15 +32,4 @@ class FoodRepository @Inject constructor(
             emit(Resource.Error(e.message.toString()))
         }
     }
-
-    fun getNearbyResto(token: String, query: String): LiveData<Resource<NearbyRestoResponse>> =
-        liveData {
-//            emit(Resource.Loading)
-//            try {
-//                val response = apiService.getNearbyResto(token, query)
-//                emit(Resource.Success(response))
-//            } catch (e: Exception) {
-//                emit(Resource.Error(e.message.toString()))
-//            }
-        }
 }

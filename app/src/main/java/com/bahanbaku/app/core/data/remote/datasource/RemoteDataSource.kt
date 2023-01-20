@@ -1,7 +1,7 @@
 package com.bahanbaku.app.core.data.remote.datasource
 
-import android.util.Log
 import com.bahanbaku.app.core.data.Resource
+import com.bahanbaku.app.core.data.remote.ApiResponse
 import com.bahanbaku.app.core.data.remote.response.*
 import com.bahanbaku.app.core.data.remote.retrofit.ApiService
 import com.bahanbaku.app.core.domain.model.ProductsData
@@ -9,12 +9,8 @@ import com.bahanbaku.app.core.domain.model.Profile
 import com.bahanbaku.app.core.domain.model.Recipe
 import com.bahanbaku.app.core.utils.DataMapper
 import com.bahanbaku.app.core.utils.ERROR_DEFAULT_MESSAGE
-import com.bahanbaku.app.core.utils.ERROR_NULL_VALUE
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.PublishSubject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -25,158 +21,91 @@ import java.io.File
 class RemoteDataSource private constructor(private val apiService: ApiService) {
 
     //    RECIPES data sources
-    fun getNewRecipes(token: String): Flowable<Resource<List<Recipe>>> {
-        val resultData = PublishSubject.create<Resource<List<Recipe>>>()
-        val client = apiService.getRecipe(token)
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                val data = response.results
-                val entity = DataMapper.mapRecipeResponseToRecipeEntity(data)
-                val domain = DataMapper.mapRecipeEntitiesToRecipeDomain(entity)
-                resultData.onNext(
-                    if (domain.isNotEmpty()) Resource.Success(domain) else Resource.Error(
-                        ERROR_NULL_VALUE
-                    )
-                )
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
-    }
-
-    fun getRecipesByTag(token: String, tag: String): Flowable<Resource<List<Recipe>>> {
-        val resultData = PublishSubject.create<Resource<List<Recipe>>>()
-        val client = apiService.getRecipeByTag(token, tag)
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                val data = response.results.recipes
-                val entity = DataMapper.mapRecipeResponseToRecipeEntity(data)
-                val domain = DataMapper.mapRecipeEntitiesToRecipeDomain(entity)
-                resultData.onNext(Resource.Success(domain))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
-    }
-
-    fun searchRecipe(token: String, query: String): Flowable<Resource<List<Recipe>>> {
-        val resultData = PublishSubject.create<Resource<List<Recipe>>>()
-        val client = apiService.searchRecipe(token, query)
-        resultData.onNext(Resource.Loading(null))
-
-        val call = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
+    fun getNewRecipes(token: String): Flow<ApiResponse<List<RecipeItem>>> {
+        return flow {
+            try {
+                val response = apiService.getRecipe(token)
                 val data = response.results
                 if (data.isNotEmpty()) {
-                    val entityData = DataMapper.mapRecipeResponseToRecipeEntity(data)
-                    val domainData = DataMapper.mapRecipeEntitiesToRecipeDomain(entityData)
-                    resultData.onNext(Resource.Success(domainData))
+                    emit(ApiResponse.Success(data))
                 } else {
-                    resultData.onNext(Resource.Error(ERROR_NULL_VALUE))
+                    emit(ApiResponse.Empty)
                 }
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+            } catch (e: Exception) {
+                emit(ApiResponse.Error(e.message.toString()))
+            }
+        }
     }
 
-    fun getRecipeById(token: String, id: String): Flowable<Resource<RecipeDetailItem>> {
-        val resultData = PublishSubject.create<Resource<RecipeDetailItem>>()
-        val client = apiService.getRecipeById(token, id)
+    fun getRecipesByTag(token: String, tag: String): Flow<Resource<List<Recipe>>> {
+        return flow {
+            try {
+                val response = apiService.getRecipeByTag(token, tag)
+                val data = DataMapper.mapRecipeResponseToRecipeEntity(response.results.recipes)
+                val domainData = DataMapper.mapRecipeEntitiesToRecipeDomain(data)
+                if (data.isNotEmpty()) {
+                    emit(Resource.Success(domainData))
+                } else {
+                    emit(Resource.Error(ERROR_DEFAULT_MESSAGE))
+                }
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
+    }
 
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
+    fun searchRecipe(token: String, query: String): Flow<Resource<List<Recipe>>> {
+        return flow {
+            try {
+                val response = apiService.searchRecipe(token, query)
+                val data = DataMapper.mapRecipeResponseToRecipeEntity(response.results)
+                val domainData = DataMapper.mapRecipeEntitiesToRecipeDomain(data)
+                if (data.isNotEmpty()) {
+                    emit(Resource.Success(domainData))
+                } else {
+                    emit(Resource.Error(ERROR_DEFAULT_MESSAGE))
+                }
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
+    }
+
+    fun getRecipeById(token: String, id: String): Flow<Resource<RecipeDetailItem>> {
+        return flow {
+            try {
+                val response = apiService.getRecipeById(token, id)
                 val data = response.results
-                resultData.onNext(
-                    if (data.title.isNotEmpty()) Resource.Success(data) else Resource.Error(
-                        ERROR_NULL_VALUE
-                    )
-                )
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+                emit(Resource.Success(data))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
     //    PROFILE data sources
-    fun getProfile(token: String): Flowable<Resource<Profile>> {
-        val resultData = PublishSubject.create<Resource<Profile>>()
-        val client = apiService.getProfile(token)
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                val data = response.results
-                val entity = DataMapper.mapProfileResponseToProfileEntity(data)
-                val domain = DataMapper.mapProfileEntityToProfileDomain(entity)
-                resultData.onNext(
-                    if (domain.email.isNotEmpty()) Resource.Success(domain) else Resource.Error(
-                        ERROR_DEFAULT_MESSAGE
-                    )
-                )
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+    fun getProfile(token: String): Flow<Resource<Profile>> {
+        return flow {
+            try {
+                val response = apiService.getProfile(token)
+                val data = DataMapper.mapProfileResponseToProfileEntity(response.results)
+                val domainData = DataMapper.mapProfileEntityToProfileDomain(data)
+                emit(Resource.Success(domainData))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
-    fun login(email: String, password: String): Flowable<Resource<LoginResponse>> {
-        val resultData = PublishSubject.create<Resource<LoginResponse>>()
-        val client = apiService.login(email, password)
-        resultData.onNext(Resource.Loading(null))
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                resultData.onNext(
-                    if (response.token.isNotEmpty()) Resource.Success(response) else Resource.Error(
-                        ERROR_NULL_VALUE
-                    )
-                )
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+    fun login(email: String, password: String): Flow<Resource<LoginResponse>> {
+        return flow {
+            try {
+                val response = apiService.login(email, password)
+                emit(Resource.Success(response))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
     fun register(
@@ -185,85 +114,58 @@ class RemoteDataSource private constructor(private val apiService: ApiService) {
         email: String,
         password: String,
         phoneNumber: String,
-    ): Flowable<Resource<PostRegisterResponse>> {
-        val resultData = PublishSubject.create<Resource<PostRegisterResponse>>()
-        val client = apiService.register(firstName, lastName, email, password, phoneNumber)
-        resultData.onNext(Resource.Loading(null))
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                resultData.onNext(Resource.Success(response))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+    ): Flow<Resource<PostRegisterResponse>> {
+        return flow {
+            try {
+                val response =
+                    apiService.register(firstName, lastName, email, password, phoneNumber)
+                emit(Resource.Success(response))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
     fun updateUser(
         token: String,
         firstName: String,
         lastName: String
-    ): Flowable<Resource<UpdateProfileResponse>> {
-        val resultData = PublishSubject.create<Resource<UpdateProfileResponse>>()
-        val client = apiService.updateProfile(token, firstName, lastName)
-        resultData.onNext(Resource.Loading(null))
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                resultData.onNext(Resource.Success(response))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+    ): Flow<Resource<UpdateProfileResponse>> {
+        return flow {
+            try {
+                val response =
+                    apiService.updateProfile(token, firstName, lastName)
+                emit(Resource.Success(response))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
     fun uploadPicture(
         token: String,
         file: File
-    ): Flowable<Resource<UploadPictureResponse>> {
+    ): Flow<Resource<UploadPictureResponse>> {
         val mediaType = "image".toMediaTypeOrNull()
         val multipartBody =
             MultipartBody.Part.createFormData("image", file.name, file.asRequestBody(mediaType))
 
-        val resultData = PublishSubject.create<Resource<UploadPictureResponse>>()
-        val client = apiService.uploadPicture(token, multipartBody)
-        resultData.onNext(Resource.Loading(null))
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                resultData.onNext(Resource.Success(response))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+        return flow {
+            try {
+                val response =
+                    apiService.uploadPicture(token, multipartBody)
+                emit(Resource.Success(response))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
     fun updateLocation(
         token: String,
         lon: Double,
         lat: Double
-    ): Flowable<Resource<UpdateLocationResponse>> {
+    ): Flow<Resource<UpdateLocationResponse>> {
         val location = JSONObject()
         location.put("lat", lat)
         location.put("lng", lon)
@@ -274,123 +176,81 @@ class RemoteDataSource private constructor(private val apiService: ApiService) {
         val requestBody = bodyObject.toString()
             .toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
 
-        val resultData = PublishSubject.create<Resource<UpdateLocationResponse>>()
-        val client = apiService.updateLocation(token, requestBody)
-        resultData.onNext(Resource.Loading(null))
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                resultData.onNext(Resource.Success(response))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+        return flow {
+            try {
+                val response =
+                    apiService.updateLocation(token, requestBody)
+                emit(Resource.Success(response))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
-    fun getFavorites(token: String): Flowable<Resource<List<FavoriteItem>>> {
-        val resultData = PublishSubject.create<Resource<List<FavoriteItem>>>()
-        val client = apiService.getFavorites(token)
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
+    fun getFavorites(token: String): Flow<Resource<List<FavoriteItem>>> {
+        return flow {
+            try {
+                val response =
+                    apiService.getFavorites(token)
                 val data = response.results.favorite
-                resultData.onNext(Resource.Success(data))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+                if (data.isNotEmpty()) {
+                    emit(Resource.Success(data))
+                } else {
+                    emit(Resource.Error(response.message))
+                }
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
-    fun addFavorites(token: String, id: String): Flowable<Resource<PostAddFavoriteResponse>> {
-        val resultData = PublishSubject.create<Resource<PostAddFavoriteResponse>>()
-        val client = apiService.addFavorites(token, id)
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                resultData.onNext(Resource.Success(response))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+    fun addFavorites(token: String, id: String): Flow<Resource<PostAddFavoriteResponse>> {
+        return flow {
+            try {
+                val response =
+                    apiService.addFavorites(token, id)
+                emit(Resource.Success(response))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
     fun deleteBookmarkByPosition(
         token: String,
         position: Int
-    ): Flowable<Resource<DeleteFavoriteResponse>> {
-        val resultData = PublishSubject.create<Resource<DeleteFavoriteResponse>>()
-        val favoriteId = apiService.getFavorites(token)
-
-        val disposable = favoriteId
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                val a =
-                    deleteFavorites(token, response.results.favorite[position].recipeId).doOnNext {
-                        resultData.onNext(it)
-                    }
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+    ): Flow<Resource<DeleteFavoriteResponse>> {
+        return flow {
+            try {
+                val favorites =
+                    apiService.getFavorites(token)
+                deleteFavorites(token, favorites.results.favorite[position].recipeId).collect {
+                    emit(it)
+                }
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
 
-    fun deleteFavorites(token: String, id: String): Flowable<Resource<DeleteFavoriteResponse>> {
-        val resultData = PublishSubject.create<Resource<DeleteFavoriteResponse>>()
-        val client = apiService.deleteFavorites(token, id)
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                resultData.onNext(Resource.Success(response))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+    fun deleteFavorites(token: String, id: String): Flow<Resource<DeleteFavoriteResponse>> {
+        return flow {
+            try {
+                val response =
+                    apiService.deleteFavorites(token, id)
+                emit(Resource.Success(response))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
-    fun checkIfRecipeBookmarked(token: String, id: String): Flowable<Boolean> {
-        val resultData = PublishSubject.create<Boolean>()
-        val client = apiService.getFavorites(token)
+    fun checkIfRecipeBookmarked(token: String, id: String): Flow<Boolean> {
+        return flow {
+            try {
+                val response = apiService.getFavorites(token)
 
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
                 var isAvailable = false
                 response.results.favorite.forEach {
                     if (it.recipeId == id) {
@@ -398,55 +258,33 @@ class RemoteDataSource private constructor(private val apiService: ApiService) {
                     }
                 }
 
-                resultData.onNext(isAvailable)
-            }, { error ->
-                resultData.onNext(false)
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+                emit(isAvailable)
+            } catch (e: Exception) {
+                emit(false)
+            }
+        }
     }
 
-    fun getAddress(token: String): Flowable<Resource<GetAddressByUser>> {
-        val resultData = PublishSubject.create<Resource<GetAddressByUser>>()
-        val client = apiService.getUserAddress(token)
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                resultData.onNext(Resource.Success(response))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+    fun getAddress(token: String): Flow<Resource<GetAddressByUser>> {
+        return flow {
+            try {
+                val response = apiService.getUserAddress(token)
+                emit(Resource.Success(response))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
-    fun getAddressById(token: String, id: String): Flowable<Resource<GetAddressByIdResponse>> {
-        val resultData = PublishSubject.create<Resource<GetAddressByIdResponse>>()
-        val client = apiService.getUserAddressById(token, id)
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                resultData.onNext(Resource.Success(response))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+    fun getAddressById(token: String, id: String): Flow<Resource<GetAddressByIdResponse>> {
+        return flow {
+            try {
+                val response = apiService.getUserAddressById(token, id)
+                emit(Resource.Success(response))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
     fun addAddress(
@@ -459,166 +297,106 @@ class RemoteDataSource private constructor(private val apiService: ApiService) {
         label: String,
         receiverName: String,
         receiverNumber: String,
-    ): Flowable<Resource<PostAddUserAddress>> {
-        val resultData = PublishSubject.create<Resource<PostAddUserAddress>>()
-        val client =
-            apiService.addUserAddress(
-                token,
-                street,
-                district,
-                city,
-                province,
-                zipCode,
-                label,
-                receiverName,
-                receiverNumber
-            )
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                resultData.onNext(Resource.Success(response))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+    ): Flow<Resource<PostAddUserAddress>> {
+        return flow {
+            try {
+                val response = apiService.addUserAddress(
+                    token,
+                    street,
+                    district,
+                    city,
+                    province,
+                    zipCode,
+                    label,
+                    receiverName,
+                    receiverNumber
+                )
+                emit(Resource.Success(response))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
-    fun getPaymentMethods(token: String): Flowable<Resource<List<PaymentItem>>> {
-        val resultData = PublishSubject.create<Resource<List<PaymentItem>>>()
-        val client =
-            apiService.getPaymentMethod(token)
-
-        val call  = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
+    fun getPaymentMethods(token: String): Flow<Resource<List<PaymentItem>>> {
+        return flow {
+            try {
+                val response = apiService.getPaymentMethod(token)
                 val data = response.results
-                resultData.onNext(Resource.Success(data))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+                emit(Resource.Success(data))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
     fun createDirectPayment(
         token: String,
         products: ProductsData,
         id: String
-    ): Flowable<Resource<PostCreateDirectPaymentResponse>> {
-        val resultData = PublishSubject.create<Resource<PostCreateDirectPaymentResponse>>()
-        val client =
-            apiService.createDirectPayment(token, products, id)
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                resultData.onNext(Resource.Success(response))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+    ): Flow<Resource<PostCreateDirectPaymentResponse>> {
+        return flow {
+            try {
+                val response = apiService.createDirectPayment(token, products, id)
+                emit(Resource.Success(response))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
-    fun submitPaymentProof(token: String, file: File, id: String): Flowable<Resource<PostSubmitProofResponse>> {
+    fun submitPaymentProof(
+        token: String,
+        file: File,
+        id: String
+    ): Flow<Resource<PostSubmitProofResponse>> {
         val mediaType = "image".toMediaTypeOrNull()
         val multipartBody =
             MultipartBody.Part.createFormData("image", file.name, file.asRequestBody(mediaType))
 
-        val resultData = PublishSubject.create<Resource<PostSubmitProofResponse>>()
-        val client = apiService.submitPaymentProof(token, multipartBody, id)
-        resultData.onNext(Resource.Loading(null))
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                resultData.onNext(Resource.Success(response))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+        return flow {
+            try {
+                val response = apiService.submitPaymentProof(token, multipartBody, id)
+                emit(Resource.Success(response))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
-    fun getDirectPaymentInfo(token: String): Flowable<Resource<GetDirectPaymentInfoResponse>> {
-        val resultData = PublishSubject.create<Resource<GetDirectPaymentInfoResponse>>()
-        val client =
-            apiService.getDirectPaymentInfo(token)
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
-                resultData.onNext(Resource.Success(response))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+    fun getDirectPaymentInfo(token: String): Flow<Resource<GetDirectPaymentInfoResponse>> {
+        return flow {
+            try {
+                val response = apiService.getDirectPaymentInfo(token)
+                emit(Resource.Success(response))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
-    fun getDirectOrderHistory(token: String): Flowable<Resource<List<OrderHistoryItem>>> {
-        val resultData = PublishSubject.create<Resource<List<OrderHistoryItem>>>()
-        val client = apiService.getDirectOrderHistory(token)
-
-        val call = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
+    fun getDirectOrderHistory(token: String): Flow<Resource<List<OrderHistoryItem>>> {
+        return flow {
+            try {
+                val response = apiService.getDirectOrderHistory(token)
                 val data = response.results
-                resultData.onNext(Resource.Success(data))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+                emit(Resource.Success(data))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
-    fun getDirectOrderDetail(token: String, id: String): Flowable<Resource<DirectPaymentDetailResult>> {
-        val resultData = PublishSubject.create<Resource<DirectPaymentDetailResult>>()
-        val client = apiService.getDirectOrderDetail(token, id)
-
-        val disposable = client
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .take(1)
-            .subscribe({ response ->
+    fun getDirectOrderDetail(token: String, id: String): Flow<Resource<DirectPaymentDetailResult>> {
+        return flow {
+            try {
+                val response = apiService.getDirectOrderDetail(token, id)
                 val data = response.results
-                resultData.onNext(Resource.Success(data))
-            }, { error ->
-                resultData.onNext(Resource.Error(error.message.toString()))
-                Log.e(TAG, error.toString())
-            })
-
-        Log.d(TAG, if (disposable.isDisposed) "Disposed" else "Not yet disposed")
-
-        return resultData.toFlowable(BackpressureStrategy.BUFFER)
+                emit(Resource.Success(data))
+            } catch (e: Exception) {
+                emit(Resource.Error(e.message.toString()))
+            }
+        }
     }
 
     companion object {

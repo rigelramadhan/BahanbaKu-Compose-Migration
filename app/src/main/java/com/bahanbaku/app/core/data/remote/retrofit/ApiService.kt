@@ -2,7 +2,6 @@ package com.bahanbaku.app.core.data.remote.retrofit
 
 import com.bahanbaku.app.core.data.remote.response.*
 import com.bahanbaku.app.core.domain.model.ProductsData
-import io.reactivex.Flowable
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.http.*
@@ -10,95 +9,95 @@ import retrofit2.http.*
 interface ApiService {
     @FormUrlEncoded
     @POST("register")
-    fun register(
+    suspend fun register(
         @Field("firstName") firstName: String,
         @Field("lastName") lastName: String,
         @Field("email") email: String,
         @Field("password") password: String,
         @Field("phoneNumber") phoneNumber: String,
-    ): z<PostRegisterResponse>
+    ): PostRegisterResponse
 
     @FormUrlEncoded
     @POST("login")
-    fun login(
+    suspend fun login(
         @Field("email") email: String,
         @Field("password") password: String
-    ): Flowable<LoginResponse>
+    ): LoginResponse
 
     @GET("users/profile")
-    fun getProfile(
+    suspend fun getProfile(
         @Header("Authorization") token: String
-    ): Flowable<GetProfileResponse>
+    ): GetProfileResponse
 
     @FormUrlEncoded
     @POST("users/update/profile")
-    fun updateProfile(
+    suspend fun updateProfile(
         @Header("Authorization") token: String,
         @Field("firstName") firstName: String,
         @Field("lastName") lastName: String
-    ): Flowable<UpdateProfileResponse>
+    ): UpdateProfileResponse
 
     @PUT("user/update-location")
-    fun updateLocation(
+    suspend fun updateLocation(
         @Header("Authorization") token: String,
         @Body location: RequestBody
-    ): Flowable<UpdateLocationResponse>
+    ): UpdateLocationResponse
 
     @Multipart
     @POST("users/update/picture")
-    fun uploadPicture(
+    suspend fun uploadPicture(
         @Header("Authorization") token: String,
         @Part file: MultipartBody.Part
-    ): Flowable<UploadPictureResponse>
+    ): UploadPictureResponse
 
     @GET("favorites")
-    fun getFavorites(
+    suspend fun getFavorites(
         @Header("Authorization") token: String,
-    ): Flowable<GetFavoriteResponse>
+    ): GetFavoriteResponse
 
     @POST("favorites/{id}")
-    fun addFavorites(
+    suspend fun addFavorites(
         @Header("Authorization") token: String,
         @Path("id") id: String
-    ): Flowable<PostAddFavoriteResponse>
+    ): PostAddFavoriteResponse
 
     @DELETE("favorites/{id}")
-    fun deleteFavorites(
+    suspend fun deleteFavorites(
         @Header("Authorization") token: String,
         @Path("id") id: String
-    ): Flowable<DeleteFavoriteResponse>
+    ): DeleteFavoriteResponse
 
     @GET("/recipes")
-    fun getRecipe(
+    suspend fun getRecipe(
         @Header("Authorization") token: String
-    ): Flowable<GetAllRecipesResponse>
+    ): GetAllRecipesResponse
 
     @GET("recipes/search")
-    fun searchRecipe(
+    suspend fun searchRecipe(
         @Header("Authorization") token: String,
         @Query("title") name: String? = ""
-    ): Flowable<GetAllRecipesResponse>
+    ): GetAllRecipesResponse
 
     @GET("/recipes/{id}")
-    fun getRecipeById(
+    suspend fun getRecipeById(
         @Header("Authorization") token: String,
         @Path("id") id: String
-    ): Flowable<GetRecipeByIdResponse>
+    ): GetRecipeByIdResponse
 
     @GET("/tags/search")
-    fun getRecipeByTag(
+    suspend fun getRecipeByTag(
         @Header("Authorization") token: String,
         @Query("tag") tag: String = ""
-    ): Flowable<GetRecipesByTagResponse>
+    ): GetRecipesByTagResponse
 
     @GET("users/address")
-    fun getUserAddress(
+    suspend fun getUserAddress(
         @Header("Authorization") token: String
-    ): Flowable<GetAddressByUser>
+    ): GetAddressByUser
 
     @FormUrlEncoded
     @POST("users/address")
-    fun addUserAddress(
+    suspend fun addUserAddress(
         @Header("Authorization") token: String,
         @Field("street") street: String,
         @Field("district") district: String,
@@ -108,48 +107,48 @@ interface ApiService {
         @Field("label") label: String,
         @Field("receiverName") receiverName: String,
         @Field("receiverPhoneNumber") receiverNumber: String,
-    ): Flowable<PostAddUserAddress>
+    ): PostAddUserAddress
 
     @GET("/transaction/payment-method")
-    fun getPaymentMethod(
+    suspend fun getPaymentMethod(
         @Header("Authorization") token: String
-    ): Flowable<GetPaymentMethodResponse>
+    ): GetPaymentMethodResponse
 
     @GET("users/address/{id}")
-    fun getUserAddressById(
+    suspend fun getUserAddressById(
         @Header("Authorization") token: String,
         @Path("id") id: String,
-    ): Flowable<GetAddressByIdResponse>
+    ): GetAddressByIdResponse
 
     @POST("direct-pay/{id}")
-    fun createDirectPayment(
+    suspend fun createDirectPayment(
         @Header("Authorization") token: String,
         @Body productsData: ProductsData,
         @Path("id") id: String,
-    ): Flowable<PostCreateDirectPaymentResponse>
+    ): PostCreateDirectPaymentResponse
 
     @Multipart
     @POST("direct-pay/submit-payment/{id}")
-    fun submitPaymentProof(
+    suspend fun submitPaymentProof(
         @Header("Authorization") token: String,
         @Part file: MultipartBody.Part,
         @Path("id") id: String
-    ): Flowable<PostSubmitProofResponse>
+    ): PostSubmitProofResponse
 
     @GET("direct-pay/payment-method")
-    fun getDirectPaymentInfo(
+    suspend fun getDirectPaymentInfo(
         @Header("Authorization") token: String
-    ): Flowable<GetDirectPaymentInfoResponse>
+    ): GetDirectPaymentInfoResponse
 
     @GET("direct-pay")
-    fun getDirectOrderHistory(
+    suspend fun getDirectOrderHistory(
         @Header("Authorization") token: String
-    ): Flowable<GetOrderHistoryResponse>
+    ): GetOrderHistoryResponse
 
     @GET("direct-pay/{id}")
-    fun getDirectOrderDetail(
+    suspend fun getDirectOrderDetail(
         @Header("Authorization") token: String,
         @Path("id") id: String,
-    ): Flowable<GetOrderDetailResponse>
+    ): GetOrderDetailResponse
 }
 

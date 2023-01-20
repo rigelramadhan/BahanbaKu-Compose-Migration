@@ -4,7 +4,7 @@ import com.bahanbaku.app.core.data.local.entity.ProfileEntity
 import com.bahanbaku.app.core.data.local.entity.RecipeEntity
 import com.bahanbaku.app.core.data.local.room.ProfileDao
 import com.bahanbaku.app.core.data.local.room.RecipeDao
-import io.reactivex.Flowable
+import kotlinx.coroutines.flow.Flow
 
 class LocalDataSource private constructor(
     private val recipeDao: RecipeDao,
@@ -20,15 +20,15 @@ class LocalDataSource private constructor(
             }
     }
 
-    fun getAllRecipes(): Flowable<List<RecipeEntity>> = recipeDao.getRecipes()
+    fun getAllRecipes(): Flow<List<RecipeEntity>> = recipeDao.getRecipes()
 
-    fun insertRecipes(recipeList: List<RecipeEntity>) = recipeDao.insertRecipes(recipeList)
+    suspend fun insertRecipes(recipeList: List<RecipeEntity>) = recipeDao.insertRecipes(recipeList)
 
-    fun getRecipeById(id: String): Flowable<RecipeEntity> = recipeDao.getRecipeById(id)
+    fun getRecipeById(id: String): Flow<RecipeEntity> = recipeDao.getRecipeById(id)
 
-    fun getProfile(): Flowable<List<ProfileEntity>> = profileDao.getProfile()
+    fun getProfile(): Flow<List<ProfileEntity>> = profileDao.getProfile()
 
-    fun insertProfile(profile: ProfileEntity) = profileDao.insertProfile(profile)
+    suspend fun insertProfile(profile: ProfileEntity) = profileDao.insertProfile(profile)
 
     fun deleteProfile() = profileDao.deleteAllProfile()
 }

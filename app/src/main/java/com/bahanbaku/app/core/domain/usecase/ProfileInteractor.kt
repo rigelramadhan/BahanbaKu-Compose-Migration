@@ -7,7 +7,7 @@ import com.bahanbaku.app.core.data.remote.response.GetAddressByUser
 import com.bahanbaku.app.core.data.remote.response.PostAddUserAddress
 import com.bahanbaku.app.core.data.remote.response.PostRegisterResponse
 import com.bahanbaku.app.core.domain.repository.IProfileRepository
-import io.reactivex.Flowable
+import kotlinx.coroutines.flow.Flow
 import java.io.File
 
 class ProfileInteractor(private val profileRepository: IProfileRepository) : ProfileUseCase {
@@ -27,7 +27,7 @@ class ProfileInteractor(private val profileRepository: IProfileRepository) : Pro
         email: String,
         password: String,
         phoneNumber: String
-    ): Flowable<Resource<PostRegisterResponse>> =
+    ): Flow<Resource<PostRegisterResponse>> =
         profileRepository.register(firstName, lastName, email, password, phoneNumber)
 
     override fun updateUser(
@@ -47,7 +47,7 @@ class ProfileInteractor(private val profileRepository: IProfileRepository) : Pro
         lat: Double
     ) = profileRepository.updateLocation(token, lon, lat)
 
-    override fun getAddress(token: String): Flowable<Resource<GetAddressByUser>> =
+    override fun getAddress(token: String): Flow<Resource<GetAddressByUser>> =
         profileRepository.getAddress(token)
 
     override fun addAddress(
@@ -60,7 +60,7 @@ class ProfileInteractor(private val profileRepository: IProfileRepository) : Pro
         label: String,
         receiverName: String,
         receiverNumber: String,
-    ): Flowable<Resource<PostAddUserAddress>> =
+    ): Flow<Resource<PostAddUserAddress>> =
         profileRepository.addAddress(
             token,
             street,
@@ -83,5 +83,5 @@ class ProfileInteractor(private val profileRepository: IProfileRepository) : Pro
     override fun getAddressById(
         token: String,
         id: String
-    ): Flowable<Resource<GetAddressByIdResponse>> = profileRepository.getAddressById(token, id)
+    ): Flow<Resource<GetAddressByIdResponse>> = profileRepository.getAddressById(token, id)
 }

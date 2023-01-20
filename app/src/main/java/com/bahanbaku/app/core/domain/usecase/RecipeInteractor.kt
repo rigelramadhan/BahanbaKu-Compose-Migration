@@ -6,7 +6,7 @@ import com.bahanbaku.app.core.data.remote.response.FavoriteItem
 import com.bahanbaku.app.core.data.remote.response.PostAddFavoriteResponse
 import com.bahanbaku.app.core.domain.model.Recipe
 import com.bahanbaku.app.core.domain.repository.IRecipeRepository
-import io.reactivex.Flowable
+import kotlinx.coroutines.flow.Flow
 
 class RecipeInteractor(private val recipeRepository: IRecipeRepository) : RecipeUseCase {
     override fun getNewRecipes(token: String) = recipeRepository.getNewRecipes(token)
@@ -17,29 +17,29 @@ class RecipeInteractor(private val recipeRepository: IRecipeRepository) : Recipe
     override fun getRecipeById(token: String, id: String) =
         recipeRepository.getRecipeById(token, id)
 
-    override fun getRecipesByTag(token: String, tag: String): Flowable<Resource<List<Recipe>>> =
+    override fun getRecipesByTag(token: String, tag: String): Flow<Resource<List<Recipe>>> =
         recipeRepository.getRecipeByTag(token, tag)
 
-    override fun getFavorites(token: String): Flowable<Resource<List<FavoriteItem>>> =
+    override fun getFavorites(token: String): Flow<Resource<List<FavoriteItem>>> =
         recipeRepository.getFavorites(token)
 
     override fun addFavorites(
         token: String,
         id: String
-    ): Flowable<Resource<PostAddFavoriteResponse>> =
+    ): Flow<Resource<PostAddFavoriteResponse>> =
         recipeRepository.addFavorites(token, id)
 
     override fun deleteFavorites(
         token: String,
         position: Int
-    ): Flowable<Resource<DeleteFavoriteResponse>> =
+    ): Flow<Resource<DeleteFavoriteResponse>> =
         recipeRepository.deleteFavorites(token, position)
 
     override fun deleteFavorites(
         token: String,
         id: String
-    ): Flowable<Resource<DeleteFavoriteResponse>> = recipeRepository.deleteFavorites(token, id)
+    ): Flow<Resource<DeleteFavoriteResponse>> = recipeRepository.deleteFavorites(token, id)
 
-    override fun checkIfRecipeBookmarked(token: String, id: String): Flowable<Boolean> =
+    override fun checkIfRecipeBookmarked(token: String, id: String): Flow<Boolean> =
         recipeRepository.checkIfRecipeFavorited(token, id)
 }

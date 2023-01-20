@@ -4,39 +4,39 @@ import androidx.lifecycle.LiveData
 import com.bahanbaku.app.core.data.Resource
 import com.bahanbaku.app.core.data.remote.response.*
 import com.bahanbaku.app.core.domain.model.Profile
-import io.reactivex.Flowable
+import kotlinx.coroutines.flow.Flow
 import java.io.File
 
 interface ProfileUseCase {
     fun saveToken(token: String)
-    fun getToken(): LiveData<String>
+    fun getToken(): Flow<String>
     fun deleteToken()
-    fun getProfile(token: String): Flowable<Resource<Profile>>
-    fun login(email: String, password: String): Flowable<Resource<LoginResponse>>
+    fun getProfile(token: String): Flow<Resource<Profile>>
+    fun login(email: String, password: String): Flow<Resource<LoginResponse>>
     fun register(
         firstName: String,
         lastName: String,
         email: String,
         password: String,
         phoneNumber: String
-    ): Flowable<Resource<PostRegisterResponse>>
+    ): Flow<Resource<PostRegisterResponse>>
 
     fun updateUser(
         token: String,
         firstName: String,
         lastName: String
-    ): Flowable<Resource<UpdateProfileResponse>>
+    ): Flow<Resource<UpdateProfileResponse>>
 
-    fun uploadPicture(token: String, file: File): Flowable<Resource<UploadPictureResponse>>
+    fun uploadPicture(token: String, file: File): Flow<Resource<UploadPictureResponse>>
     fun updateLocation(
         token: String,
         lon: Double,
         lat: Double
-    ): Flowable<Resource<UpdateLocationResponse>>
+    ): Flow<Resource<UpdateLocationResponse>>
 
     fun getAddress(
         token: String
-    ): Flowable<Resource<GetAddressByUser>>
+    ): Flow<Resource<GetAddressByUser>>
     fun addAddress(
         token: String,
         street: String,
@@ -47,7 +47,7 @@ interface ProfileUseCase {
         label: String,
         receiverName: String,
         receiverNumber: String,
-    ): Flowable<Resource<PostAddUserAddress>>
+    ): Flow<Resource<PostAddUserAddress>>
 
 //    fun getBookmarks(token: String): Flowable<Resource<List<RecipeItem>>>
 //    fun addBookmark(token: String, id: String): Flowable<Resource<AddBookmarkResponse>>
@@ -62,5 +62,5 @@ interface ProfileUseCase {
     fun setFirstTime(firstTime: Boolean)
     fun setMainAddress(addressId: String)
     fun getMainAddress(): LiveData<String>
-    fun getAddressById(token: String, id: String): Flowable<Resource<GetAddressByIdResponse>>
+    fun getAddressById(token: String, id: String): Flow<Resource<GetAddressByIdResponse>>
 }

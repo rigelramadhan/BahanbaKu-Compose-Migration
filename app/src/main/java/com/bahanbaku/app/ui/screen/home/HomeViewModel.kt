@@ -1,7 +1,7 @@
 package com.bahanbaku.app.ui.screen.home
 
-import androidx.lifecycle.LiveDataReactiveStreams
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.bahanbaku.app.core.data.Resource
 import com.bahanbaku.app.core.domain.model.Recipe
@@ -24,11 +24,13 @@ class HomeViewModel @Inject constructor(
 
     val authState: StateFlow<AuthState> get() = _authState
 
-    fun getRecipes(token: String) =
-        LiveDataReactiveStreams.fromPublisher(recipeUseCase.getNewRecipes(token))
+    private val _allRecipes: MutableStateFlow<Resource<List<Recipe>>> =
+        MutableStateFlow(Resource.Loading())
+
+    val allRecipes: StateFlow<Resource<List<Recipe>>> get() = _allRecipes
 
     fun getRecipesByTag(token: String, tag: String) =
-        LiveDataReactiveStreams.fromPublisher(recipeUseCase.getRecipesByTag(token, tag))
+        recipeUseCase.getRecipesByTag(token, tag).asLiveData()
 
     init {
         loadToken()
@@ -43,9 +45,22 @@ class HomeViewModel @Inject constructor(
                 .collect { token ->
                     if (token != "null") {
                         _authState.value = AuthState.Authorized(token)
+                        loadRecipes(token)
                     } else {
                         _authState.value = AuthState.Unauthorized()
                     }
+                }
+        }
+    }
+
+    private fun loadRecipes(token: String) {
+        viewModelScope.launch {
+            recipeUseCase.getNewRecipes(token)
+                .catch {
+                    _allRecipes.value = Resource.Error(it.message.toString())
+                }
+                .collect { recipes ->
+                    _allRecipes.value = recipes
                 }
         }
     }
