@@ -1,6 +1,5 @@
 package com.bahanbaku.app.ui.screen.home
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,13 +16,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bahanbaku.app.R
-import com.bahanbaku.app.core.data.Resource
 import com.bahanbaku.app.core.domain.model.Categories
 import com.bahanbaku.app.core.domain.model.Recipe
 import com.bahanbaku.app.core.domain.model.RecipeRecommendations
@@ -48,11 +45,19 @@ fun HomeScreen(
     navigateToCategory: (String) -> Unit
 ) {
     val authState: AuthState by viewModel.authState.collectAsState(initial = AuthState.Loading())
-    val allRecipes: Resource<List<Recipe>> by viewModel.allRecipes.collectAsState(initial = Resource.Loading())
+    val uiState: HomeViewState by viewModel.uiState.collectAsState(initial = HomeViewState())
 
     when (authState) {
         is AuthState.Authorized -> {
-
+            HomeContent(
+                profileName = uiState.name,
+                time = "Morning",
+                topRecommended = uiState.topRecommended,
+                categories = uiState.categories,
+                allRecipes = uiState.allRecipes,
+                navigateToDetail = navigateToDetail,
+                navigateToCategory = navigateToCategory
+            )
         }
 
         is AuthState.Unauthorized -> {
@@ -64,34 +69,6 @@ fun HomeScreen(
         }
 
         is AuthState.Error -> {
-
-        }
-    }
-
-    when (allRecipes) {
-        is Resource.Loading -> {
-            LoadingIndicator()
-        }
-
-        is Resource.Success -> {
-            val data = allRecipes.data
-            if (data.isNullOrEmpty()) {
-                Toast.makeText(LocalContext.current, "No recipes found", Toast.LENGTH_SHORT).show()
-            } else {
-                HomeContent(
-                    profileName = "",
-                    time = "Morning",
-                    topRecommended = RecipeRecommendations("Our Recommendations", data),
-                    categories = categories,
-                    recommendations = listOf(),
-                    allRecipes = data,
-                    navigateToDetail = navigateToDetail,
-                    navigateToCategory = navigateToCategory,
-                )
-            }
-        }
-
-        is Resource.Error -> {
 
         }
     }
@@ -179,7 +156,7 @@ fun RecipeGrid(
 
     Column(modifier = modifier.padding(8.dp)) {
         Text(
-            text = recipeRecommendations.title,
+            text = recipeRecommendations.title.asString(),
             style = MaterialTheme.typography.h6,
             modifier = Modifier.padding(8.dp),
         )
@@ -226,7 +203,7 @@ fun RecipeRecommendation(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = recipeRecommendations.title,
+                text = recipeRecommendations.title.asString(),
                 style = MaterialTheme.typography.h6,
                 modifier = Modifier.weight(1f)
             )
@@ -263,7 +240,7 @@ fun RecipeCategories(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = recipeRecommendations.title,
+                text = recipeRecommendations.title.asString(),
                 style = MaterialTheme.typography.h6,
                 modifier = Modifier.fillMaxWidth()
             )

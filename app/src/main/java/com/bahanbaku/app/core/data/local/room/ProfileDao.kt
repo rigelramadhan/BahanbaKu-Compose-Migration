@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.bahanbaku.app.core.data.local.entity.ProfileEntity
-import io.reactivex.Completable
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -17,5 +16,5 @@ interface ProfileDao {
     fun deleteAllProfile()
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertProfile(profile: ProfileEntity): Completable
+    suspend fun insertProfile(profile: ProfileEntity)
 }

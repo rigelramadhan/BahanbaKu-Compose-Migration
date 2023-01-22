@@ -3,6 +3,7 @@ package com.bahanbaku.app.core.utils
 import com.bahanbaku.app.core.domain.model.Categories
 import com.bahanbaku.app.core.domain.model.Recipe
 import com.bahanbaku.app.core.domain.model.RecipeRecommendations
+import com.bahanbaku.app.ui.common.UiText
 
 
 const val imagePlaceholderUrl =
@@ -61,6 +62,6 @@ val recipe2 = Recipe(
 val recipeList = listOf(recipe1, recipe2, recipe2, recipe1, recipe1)
 
 val recipeRecommendations = RecipeRecommendations(
-    title = "Recommendation Title",
+    title = UiText.DynamicString("Recommendation Title"),
     recipes = recipeList,
 )

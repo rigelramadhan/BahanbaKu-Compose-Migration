@@ -15,4 +15,7 @@
     <string name="more_recipes">More Recipes</string>
     <string name="description_search_recipes">Search recipes</string>
     <string name="search_for_recipes">Search for recipes</string>
+    <string name="top_recommendations">Top Recommendations</string>
+    <string name="western">Western</string>
+    <string name="cake">Desserts</string>
 </resources>
