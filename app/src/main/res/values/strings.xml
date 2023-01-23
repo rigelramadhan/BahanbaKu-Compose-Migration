@@ -5,6 +5,8 @@
     <string name="description_recipe_image">Recipe image</string>
     <string name="description_recipe_rating">Recipe rating</string>
     <string name="description_category_image">Category image</string>
+    <string name="description_email_text_field">Email text field</string>
+    <string name="description_password_text_field">Password text field</string>
 
 <!--    FORMATS -->
     <string name="format_name">%s %s</string>
@@ -18,4 +20,12 @@
     <string name="top_recommendations">Top Recommendations</string>
     <string name="western">Western</string>
     <string name="cake">Desserts</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="create_an_account">Create an account instead?</string>
+    <string name="register">Register</string>
+    <string name="login_greetings">Hello, welcome back! Please enter your login info below to proceed using the app. 😁</string>
+    <string name="hide_password">Hide password</string>
+    <string name="show_password">Show password</string>
 </resources>

@@ -34,8 +34,8 @@ import com.bahanbaku.app.ui.components.RecipeCardGridItem
 import com.bahanbaku.app.ui.components.RecipeCardMediumItem
 import com.bahanbaku.app.ui.theme.BahanbaKuTheme
 import com.bahanbaku.app.ui.theme.GrayText
-import com.bahanbaku.app.ui.theme.PureWhite
-import com.bahanbaku.app.ui.theme.WhiteDefault
+import com.bahanbaku.app.ui.theme.WhiteBackground
+import com.bahanbaku.app.ui.theme.WhitePure
 
 @Composable
 fun HomeScreen(
@@ -96,13 +96,13 @@ fun HomeContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = PureWhite)
+                .background(color = WhitePure)
                 .padding(vertical = 24.dp, horizontal = 16.dp)
         ) {
             Card(
                 shape = RoundedCornerShape(32.dp),
                 modifier = Modifier.fillMaxWidth(),
-                backgroundColor = WhiteDefault
+                backgroundColor = WhiteBackground
             ) {
                 Row(
                     modifier = Modifier
