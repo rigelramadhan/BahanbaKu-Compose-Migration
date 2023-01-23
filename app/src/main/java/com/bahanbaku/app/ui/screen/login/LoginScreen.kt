@@ -30,7 +30,8 @@ import com.bahanbaku.app.ui.theme.YellowPrimary
 fun LoginScreen(
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = hiltViewModel(),
-    navigateToRegister: () -> Unit
+    navigateToRegister: () -> Unit,
+    navigateToHome: () -> Unit,
 ) {
     val uiState: AuthState by viewModel.uiState.collectAsState(initial = AuthState.Unauthorized())
 
@@ -40,7 +41,7 @@ fun LoginScreen(
 
     when (uiState) {
         is AuthState.Authorized -> {
-
+            navigateToHome()
         }
 
         is AuthState.Error -> {

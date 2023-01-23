@@ -12,6 +12,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bahanbaku.app.ui.navigation.Screen
 import com.bahanbaku.app.ui.screen.home.HomeScreen
+import com.bahanbaku.app.ui.screen.login.LoginScreen
 
 @Composable
 fun BahanbaKuApp(
@@ -30,7 +31,16 @@ fun BahanbaKuApp(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Home.route) {
-                HomeScreen(navigateToDetail = {}, navigateToCategory ={})
+                HomeScreen(navigateToDetail = {}, navigateToCategory ={}, navigateToLogin = {
+                    navController.navigate(Screen.Login.route)
+                })
+            }
+            composable(Screen.Login.route) {
+                LoginScreen(navigateToRegister = {
+
+                }, navigateToHome = {
+                    navController.navigate(Screen.Home.route)
+                })
             }
         }
     }

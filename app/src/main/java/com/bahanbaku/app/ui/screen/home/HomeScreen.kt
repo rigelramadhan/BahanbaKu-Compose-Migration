@@ -42,7 +42,8 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
     navigateToDetail: (String) -> Unit,
-    navigateToCategory: (String) -> Unit
+    navigateToCategory: (String) -> Unit,
+    navigateToLogin: () -> Unit,
 ) {
     val authState: AuthState by viewModel.authState.collectAsState(initial = AuthState.Loading())
     val uiState: HomeViewState by viewModel.uiState.collectAsState(initial = HomeViewState())
@@ -61,7 +62,7 @@ fun HomeScreen(
         }
 
         is AuthState.Unauthorized -> {
-
+            navigateToLogin()
         }
 
         is AuthState.Loading -> {
