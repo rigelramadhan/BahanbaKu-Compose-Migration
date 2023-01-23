@@ -8,11 +8,8 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.MailOutline
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -21,7 +18,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.bahanbaku.app.R
+import com.bahanbaku.app.ui.common.AuthState
 import com.bahanbaku.app.ui.theme.BahanbaKuTheme
 import com.bahanbaku.app.ui.theme.GrayText
 import com.bahanbaku.app.ui.theme.WhitePure
@@ -30,9 +29,32 @@ import com.bahanbaku.app.ui.theme.YellowPrimary
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
+    viewModel: LoginViewModel = hiltViewModel(),
+    navigateToRegister: () -> Unit
+) {
+    val uiState: AuthState by viewModel.uiState.collectAsState(initial = AuthState.Unauthorized())
 
-    ) {
+    LoginContent(onLoginButtonPressed = { email, password ->
+        viewModel.login(email, password)
+    }, navigateToRegister = navigateToRegister)
 
+    when (uiState) {
+        is AuthState.Authorized -> {
+
+        }
+
+        is AuthState.Error -> {
+
+        }
+
+        is AuthState.Loading -> {
+
+        }
+
+        is AuthState.Unauthorized -> {
+
+        }
+    }
 }
 
 @Composable
