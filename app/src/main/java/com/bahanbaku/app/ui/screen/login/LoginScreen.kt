@@ -48,28 +48,27 @@ fun LoginScreen(
 
     var visiblePassword by rememberSaveable { mutableStateOf(false) }
 
+    LoginContent(
+        onLoginButtonPressed = { email, password ->
+            viewModel.login(email, password)
+        },
+        navigateToRegister = navigateToRegister,
+        emailText = emailText,
+        passwordText = passwordText,
+        visiblePassword = visiblePassword,
+        onEmailChange = { emailText = it },
+        onPasswordChange = { passwordText = it },
+        onVisiblePasswordChange = { visiblePassword = !visiblePassword }
+    )
+
     when (uiState) {
         is AuthState.Unauthorized -> {
-            Toast.makeText(LocalContext.current, "Unauthorized", Toast.LENGTH_SHORT).show()
-            LoginContent(
-                onLoginButtonPressed = { email, password ->
-                    viewModel.login(email, password)
-                },
-                navigateToRegister = navigateToRegister,
-                emailText = emailText,
-                passwordText = passwordText,
-                visiblePassword = visiblePassword,
-                onEmailChange = { emailText = it },
-                onPasswordChange = { passwordText = it },
-                onVisiblePasswordChange = { visiblePassword = !visiblePassword }
-            )
+
         }
         is AuthState.Authorized -> {
-            Toast.makeText(LocalContext.current, "Authorized", Toast.LENGTH_SHORT).show()
             navigateToHome()
         }
         is AuthState.Loading -> {
-            Toast.makeText(LocalContext.current, "Loading", Toast.LENGTH_SHORT).show()
             LoadingIndicator()
         }
         is AuthState.Error -> {

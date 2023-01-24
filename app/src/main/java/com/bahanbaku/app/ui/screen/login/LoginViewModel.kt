@@ -49,7 +49,11 @@ class LoginViewModel @Inject constructor(
                     if (response.data != null) {
                         val token = response.data.token
                         profileUseCase.saveToken(token)
-                        _uiState.value = AuthState.Authorized(token)
+                        if (token.length > 6) {
+                            _uiState.value = AuthState.Authorized(token)
+                        } else {
+                            _uiState.value = AuthState.Error(response.message.toString())
+                        }
                     } else {
                         _uiState.value = AuthState.Error(response.message.toString())
                     }
