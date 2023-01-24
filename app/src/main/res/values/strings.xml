@@ -28,4 +28,6 @@
     <string name="login_greetings">Hello, welcome back! Please enter your login info below to proceed using the app. 😁</string>
     <string name="hide_password">Hide password</string>
     <string name="show_password">Show password</string>
+    <string name="categories">Categories</string>
+    <string name="discover_others">Discover others</string>
 </resources>

@@ -10,6 +10,7 @@ import com.bahanbaku.app.core.domain.model.Recipe
 import com.bahanbaku.app.core.utils.DataMapper
 import com.bahanbaku.app.core.utils.ERROR_DEFAULT_MESSAGE
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -22,17 +23,17 @@ class RemoteDataSource private constructor(private val apiService: ApiService) {
 
     //    RECIPES data sources
     fun getNewRecipes(token: String): Flow<ApiResponse<List<RecipeItem>>> {
-        return flow {
+        return channelFlow {
             try {
-                val response = apiService.getRecipe(token)
+                val response = apiService.getRecipe("Bearer $token")
                 val data = response.results
                 if (data.isNotEmpty()) {
-                    emit(ApiResponse.Success(data))
+                    send(ApiResponse.Success(data))
                 } else {
-                    emit(ApiResponse.Empty)
+                    send(ApiResponse.Empty)
                 }
             } catch (e: Exception) {
-                emit(ApiResponse.Error(e.message.toString()))
+                send(ApiResponse.Error(e.message.toString()))
             }
         }
     }
@@ -40,7 +41,7 @@ class RemoteDataSource private constructor(private val apiService: ApiService) {
     fun getRecipesByTag(token: String, tag: String): Flow<Resource<List<Recipe>>> {
         return flow {
             try {
-                val response = apiService.getRecipeByTag(token, tag)
+                val response = apiService.getRecipeByTag("Bearer $token", tag)
                 val data = DataMapper.mapRecipeResponseToRecipeEntity(response.results.recipes)
                 val domainData = DataMapper.mapRecipeEntitiesToRecipeDomain(data)
                 if (data.isNotEmpty()) {
@@ -57,7 +58,7 @@ class RemoteDataSource private constructor(private val apiService: ApiService) {
     fun searchRecipe(token: String, query: String): Flow<Resource<List<Recipe>>> {
         return flow {
             try {
-                val response = apiService.searchRecipe(token, query)
+                val response = apiService.searchRecipe("Bearer $token", query)
                 val data = DataMapper.mapRecipeResponseToRecipeEntity(response.results)
                 val domainData = DataMapper.mapRecipeEntitiesToRecipeDomain(data)
                 if (data.isNotEmpty()) {
@@ -74,7 +75,7 @@ class RemoteDataSource private constructor(private val apiService: ApiService) {
     fun getRecipeById(token: String, id: String): Flow<Resource<RecipeDetailItem>> {
         return flow {
             try {
-                val response = apiService.getRecipeById(token, id)
+                val response = apiService.getRecipeById("Bearer $token", id)
                 val data = response.results
                 emit(Resource.Success(data))
             } catch (e: Exception) {
@@ -87,7 +88,7 @@ class RemoteDataSource private constructor(private val apiService: ApiService) {
     fun getProfile(token: String): Flow<Resource<Profile>> {
         return flow {
             try {
-                val response = apiService.getProfile(token)
+                val response = apiService.getProfile("Bearer $token")
                 val data = DataMapper.mapProfileResponseToProfileEntity(response.results)
                 val domainData = DataMapper.mapProfileEntityToProfileDomain(data)
                 emit(Resource.Success(domainData))
@@ -134,7 +135,7 @@ class RemoteDataSource private constructor(private val apiService: ApiService) {
         return flow {
             try {
                 val response =
-                    apiService.updateProfile(token, firstName, lastName)
+                    apiService.updateProfile("Bearer $token", firstName, lastName)
                 emit(Resource.Success(response))
             } catch (e: Exception) {
                 emit(Resource.Error(e.message.toString()))
@@ -153,7 +154,7 @@ class RemoteDataSource private constructor(private val apiService: ApiService) {
         return flow {
             try {
                 val response =
-                    apiService.uploadPicture(token, multipartBody)
+                    apiService.uploadPicture("Bearer $token", multipartBody)
                 emit(Resource.Success(response))
             } catch (e: Exception) {
                 emit(Resource.Error(e.message.toString()))
@@ -179,7 +180,7 @@ class RemoteDataSource private constructor(private val apiService: ApiService) {
         return flow {
             try {
                 val response =
-                    apiService.updateLocation(token, requestBody)
+                    apiService.updateLocation("Bearer $token", requestBody)
                 emit(Resource.Success(response))
             } catch (e: Exception) {
                 emit(Resource.Error(e.message.toString()))

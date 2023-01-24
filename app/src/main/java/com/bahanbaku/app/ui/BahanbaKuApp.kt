@@ -3,6 +3,7 @@ package com.bahanbaku.app.ui
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -32,14 +33,18 @@ fun BahanbaKuApp(
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(navigateToDetail = {}, navigateToCategory ={}, navigateToLogin = {
-                    navController.navigate(Screen.Login.route)
+                    LaunchedEffect(Unit) {
+                        navController.navigate(Screen.Login.route)
+                    }
                 })
             }
             composable(Screen.Login.route) {
                 LoginScreen(navigateToRegister = {
 
                 }, navigateToHome = {
-                    navController.navigate(Screen.Home.route)
+                    LaunchedEffect(Unit) {
+                        navController.navigate(Screen.Home.route)
+                    }
                 })
             }
         }

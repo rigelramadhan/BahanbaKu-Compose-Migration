@@ -34,19 +34,19 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeViewState> get() = _uiState
 
     init {
-        loadToken()
+        checkToken()
     }
 
-    private fun loadToken() {
+    private fun checkToken() {
         viewModelScope.launch {
             profileUseCase.getToken()
                 .catch {
-                    _authState.value = AuthState.Error(it.message.toString())
+
                 }
-                .collect { token ->
-                    if (token != "null") {
-                        _authState.value = AuthState.Authorized(token)
-                        loadRecipes(token)
+                .collect {
+                    if (it.length > 6) {
+                        _authState.value = AuthState.Authorized(it)
+                        loadRecipes(it)
                     } else {
                         _authState.value = AuthState.Unauthorized()
                     }
@@ -91,6 +91,8 @@ class HomeViewModel @Inject constructor(
                     ),
                     allRecipes = allRecipes.data ?: emptyList()
                 )
+            }.collect { homeViewState ->
+                _uiState.value = homeViewState
             }
         }
     }

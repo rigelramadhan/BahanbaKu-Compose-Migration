@@ -43,7 +43,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     navigateToDetail: (String) -> Unit,
     navigateToCategory: (String) -> Unit,
-    navigateToLogin: () -> Unit,
+    navigateToLogin: @Composable (() -> Unit),
 ) {
     val authState: AuthState by viewModel.authState.collectAsState(initial = AuthState.Loading())
     val uiState: HomeViewState by viewModel.uiState.collectAsState(initial = HomeViewState())
@@ -70,7 +70,7 @@ fun HomeScreen(
         }
 
         is AuthState.Error -> {
-
+            navigateToLogin()
         }
     }
 }
@@ -157,7 +157,7 @@ fun RecipeGrid(
 
     Column(modifier = modifier.padding(8.dp)) {
         Text(
-            text = recipeRecommendations.title.asString(),
+            text = stringResource(R.string.discover_others),
             style = MaterialTheme.typography.h6,
             modifier = Modifier.padding(8.dp),
         )
@@ -241,7 +241,7 @@ fun RecipeCategories(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = recipeRecommendations.title.asString(),
+                text = stringResource(R.string.categories),
                 style = MaterialTheme.typography.h6,
                 modifier = Modifier.fillMaxWidth()
             )

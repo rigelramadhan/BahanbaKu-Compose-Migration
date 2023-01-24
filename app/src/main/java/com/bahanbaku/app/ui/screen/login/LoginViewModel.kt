@@ -15,9 +15,29 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val profileUseCase: ProfileUseCase
 ) : ViewModel() {
-    private val _uiState: MutableStateFlow<AuthState> = MutableStateFlow(AuthState.Unauthorized())
+    private val _uiState: MutableStateFlow<AuthState> = MutableStateFlow(AuthState.Loading())
 
     val uiState: StateFlow<AuthState> get() = _uiState
+
+    init {
+        checkToken()
+    }
+
+    private fun checkToken() {
+        viewModelScope.launch {
+            profileUseCase.getToken()
+                .catch {
+
+                }
+                .collect {
+                    if (it.length > 6) {
+                        _uiState.value = AuthState.Authorized(it)
+                    } else {
+                        _uiState.value = AuthState.Unauthorized()
+                    }
+                }
+        }
+    }
 
     fun login(email: String, password: String) {
         viewModelScope.launch {

@@ -1,5 +1,6 @@
 package com.bahanbaku.app.ui.screen.login
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -12,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
@@ -21,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bahanbaku.app.R
 import com.bahanbaku.app.ui.common.AuthState
+import com.bahanbaku.app.ui.components.LoadingIndicator
 import com.bahanbaku.app.ui.theme.BahanbaKuTheme
 import com.bahanbaku.app.ui.theme.GrayText
 import com.bahanbaku.app.ui.theme.WhitePure
@@ -31,29 +34,46 @@ fun LoginScreen(
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = hiltViewModel(),
     navigateToRegister: () -> Unit,
-    navigateToHome: () -> Unit,
+    navigateToHome: @Composable (() -> Unit),
 ) {
     val uiState: AuthState by viewModel.uiState.collectAsState(initial = AuthState.Unauthorized())
 
-    LoginContent(onLoginButtonPressed = { email, password ->
-        viewModel.login(email, password)
-    }, navigateToRegister = navigateToRegister)
+    var emailText by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue())
+    }
+
+    var passwordText by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue())
+    }
+
+    var visiblePassword by rememberSaveable { mutableStateOf(false) }
 
     when (uiState) {
+        is AuthState.Unauthorized -> {
+            Toast.makeText(LocalContext.current, "Unauthorized", Toast.LENGTH_SHORT).show()
+            LoginContent(
+                onLoginButtonPressed = { email, password ->
+                    viewModel.login(email, password)
+                },
+                navigateToRegister = navigateToRegister,
+                emailText = emailText,
+                passwordText = passwordText,
+                visiblePassword = visiblePassword,
+                onEmailChange = { emailText = it },
+                onPasswordChange = { passwordText = it },
+                onVisiblePasswordChange = { visiblePassword = !visiblePassword }
+            )
+        }
         is AuthState.Authorized -> {
+            Toast.makeText(LocalContext.current, "Authorized", Toast.LENGTH_SHORT).show()
             navigateToHome()
         }
-
-        is AuthState.Error -> {
-
-        }
-
         is AuthState.Loading -> {
-
+            Toast.makeText(LocalContext.current, "Loading", Toast.LENGTH_SHORT).show()
+            LoadingIndicator()
         }
-
-        is AuthState.Unauthorized -> {
-
+        is AuthState.Error -> {
+            Toast.makeText(LocalContext.current, "Error", Toast.LENGTH_SHORT).show()
         }
     }
 }
@@ -63,15 +83,13 @@ fun LoginContent(
     modifier: Modifier = Modifier,
     onLoginButtonPressed: (email: String, password: String) -> Unit,
     navigateToRegister: () -> Unit,
+    emailText: TextFieldValue = TextFieldValue(""),
+    passwordText: TextFieldValue = TextFieldValue(""),
+    visiblePassword: Boolean = false,
+    onEmailChange: (TextFieldValue) -> Unit,
+    onPasswordChange: (TextFieldValue) -> Unit,
+    onVisiblePasswordChange: () -> Unit,
 ) {
-    var emailText by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue())
-    }
-
-    var passwordText by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue())
-    }
-    var visiblePassword by rememberSaveable { mutableStateOf(false) }
 
     Column(modifier = modifier.padding(16.dp)) {
         Text(
@@ -98,7 +116,7 @@ fun LoginContent(
                     contentDescription = stringResource(R.string.description_email_text_field)
                 )
             },
-            onValueChange = { emailText = it },
+            onValueChange = onEmailChange,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -123,13 +141,11 @@ fun LoginContent(
                         R.string.show_password
                     )
 
-                IconButton(onClick = {
-                    visiblePassword = !visiblePassword
-                }) {
+                IconButton(onClick = onVisiblePasswordChange) {
                     Icon(imageVector = icon, contentDescription = description)
                 }
             },
-            onValueChange = { passwordText = it },
+            onValueChange = onPasswordChange,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(42.dp))
@@ -210,6 +226,6 @@ fun LoginContentPreview() {
 
         }, navigateToRegister = {
 
-        })
+        }, onEmailChange = {}, onPasswordChange = {}, onVisiblePasswordChange = {})
     }
 }
