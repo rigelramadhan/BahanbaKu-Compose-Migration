@@ -30,4 +30,6 @@
     <string name="show_password">Show password</string>
     <string name="categories">Categories</string>
     <string name="discover_others">Discover others</string>
+    <string name="enter_recipe_name">Enter a recipe name</string>
+    <string name="description_close_search">Close search</string>
 </resources>
