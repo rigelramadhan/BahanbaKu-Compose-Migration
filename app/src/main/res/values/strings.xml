@@ -7,10 +7,13 @@
     <string name="description_category_image">Category image</string>
     <string name="description_email_text_field">Email text field</string>
     <string name="description_password_text_field">Password text field</string>
+    <string name="description_close_search">Close search</string>
+    <string name="description_ingredient_image">Ingredient image</string>
 
 <!--    FORMATS -->
     <string name="format_name">%s %s</string>
     <string name="format_greetings">Good %s, %s!</string>
+    <string name="format_currency">Rp%s</string>
 
 <!--    OTHERS -->
     <string name="all">All</string>
@@ -31,5 +34,4 @@
     <string name="categories">Categories</string>
     <string name="discover_others">Discover others</string>
     <string name="enter_recipe_name">Enter a recipe name</string>
-    <string name="description_close_search">Close search</string>
 </resources>
