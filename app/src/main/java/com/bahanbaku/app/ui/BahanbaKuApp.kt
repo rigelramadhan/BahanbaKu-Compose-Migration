@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import com.bahanbaku.app.ui.navigation.Screen
 import com.bahanbaku.app.ui.screen.home.HomeScreen
 import com.bahanbaku.app.ui.screen.login.LoginScreen
+import com.bahanbaku.app.ui.screen.search.SearchScreen
 
 @Composable
 fun BahanbaKuApp(
@@ -32,11 +33,18 @@ fun BahanbaKuApp(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Home.route) {
-                HomeScreen(navigateToDetail = {}, navigateToCategory ={}, navigateToLogin = {
-                    LaunchedEffect(Unit) {
-                        navController.navigate(Screen.Login.route)
-                    }
-                })
+                HomeScreen(
+                    navigateToDetail = {},
+                    navigateToCategory = {},
+                    navigateToLogin = {
+                        LaunchedEffect(Unit) {
+                            navController.navigate(Screen.Login.route)
+                        }
+                    },
+                    navigateToSearch = {
+                        navController.navigate(Screen.Search.route)
+                    },
+                )
             }
             composable(Screen.Login.route) {
                 LoginScreen(navigateToRegister = {
@@ -44,6 +52,13 @@ fun BahanbaKuApp(
                 }, navigateToHome = {
                     LaunchedEffect(Unit) {
                         navController.navigate(Screen.Home.route)
+                    }
+                })
+            }
+            composable(Screen.Search.route) {
+                SearchScreen(navigateToLogin = {
+                    LaunchedEffect(Unit) {
+                        navController.navigate(Screen.Login.route)
                     }
                 })
             }

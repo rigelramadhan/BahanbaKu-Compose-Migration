@@ -43,7 +43,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     navigateToDetail: (String) -> Unit,
     navigateToCategory: (String) -> Unit,
-    navigateToLogin: @Composable (() -> Unit),
+    navigateToLogin: @Composable () -> Unit,
+    navigateToSearch: () -> Unit,
 ) {
     val authState: AuthState by viewModel.authState.collectAsState(initial = AuthState.Loading())
     val uiState: HomeViewState by viewModel.uiState.collectAsState(initial = HomeViewState())
@@ -57,7 +58,8 @@ fun HomeScreen(
                 categories = uiState.categories,
                 allRecipes = uiState.allRecipes,
                 navigateToDetail = navigateToDetail,
-                navigateToCategory = navigateToCategory
+                navigateToCategory = navigateToCategory,
+                navigateToSearch = navigateToSearch,
             )
         }
 
@@ -85,7 +87,8 @@ fun HomeContent(
     recommendations: List<RecipeRecommendations> = listOf(),
     allRecipes: List<Recipe>,
     navigateToDetail: (String) -> Unit,
-    navigateToCategory: (String) -> Unit
+    navigateToCategory: (String) -> Unit,
+    navigateToSearch: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -102,8 +105,10 @@ fun HomeContent(
         ) {
             Card(
                 shape = RoundedCornerShape(32.dp),
-                modifier = Modifier.fillMaxWidth(),
-                backgroundColor = WhiteBackground
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { navigateToSearch() },
+                backgroundColor = WhiteBackground,
             ) {
                 Row(
                     modifier = Modifier
@@ -272,7 +277,9 @@ fun HomeContentPreview() {
             ),
             allRecipes = recipeList,
             navigateToDetail = {},
-            navigateToCategory = {})
+            navigateToCategory = {},
+            navigateToSearch = {}
+        )
     }
 }
 

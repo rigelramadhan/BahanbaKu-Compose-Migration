@@ -34,4 +34,6 @@
     <string name="categories">Categories</string>
     <string name="discover_others">Discover others</string>
     <string name="enter_recipe_name">Enter a recipe name</string>
+    <string name="description_favorite_button">Favorite button</string>
+    <string name="description_back_button">Back button</string>
 </resources>
